@@ -427,8 +427,31 @@ export default {
     try {
       return await api(request, env);
     } catch (error) {
+      // 临时排查信息：先去除密钥和密码。
+      let details = String(error?.message || "未知错误");
+
+      for (const secret of [
+        env.SUPABASE_SECRET_KEY,
+        env.ADMIN_PASSWORD,
+      ]) {
+        if (typeof secret === "string" && secret.length > 0) {
+          details = details.split(secret).join("[已隐藏]");
+        }
+      }
+
+      details = details.replace(
+        /sb_secret_[A-Za-z0-9_-]+/g,
+        "[已隐藏密钥]"
+      );
+
       return json(
-        { error: error.status ? error.message : "服务器暂时无法完成操作。" },
+        {
+          error: error.status
+            ? error.message
+            : "连接检查失败，请查看 details。",
+          type: error.name || "Error",
+          details: details.slice(0, 400),
+        },
         error.status || 503
       );
     }
