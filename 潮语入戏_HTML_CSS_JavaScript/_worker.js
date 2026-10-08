@@ -60,7 +60,7 @@ async function supabase(config, path, options = {}) {
   const response = await fetch(config.url + path, {
     ...options,
     headers,
-    redirect: "error",
+   redirect: "manual",
   });
 
   if (!response.ok) {
